@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bag Shop — Home</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a class="logo" href="index.html">Bag Shop</a>
+      <nav id="mainNav"></nav>
+    </div>
+  </header>
+  <main>
+    <section class="hero">
+      <h1>Carry style everywhere</h1>
+      <p>Browse totes, backpacks, and travel bags. Register or log in to add items to your cart and checkout.</p>
+      <div class="actions" style="margin-top: 1.25rem;">
+        <a class="btn" href="products.html">Shop now</a>
+        <a class="btn btn-secondary" href="register.html">Create account</a>
+      </div>
+    </section>
+    <h2>Featured bags</h2>
+    <div id="featured" class="grid"></div>
+  </main>
+  <script src="js/script.js"></script>
+  <script>
+    renderNav('home');
+    (async () => {
+      try {
+        const products = await loadProducts();
+        document.getElementById('featured').innerHTML = products.slice(0, 3).map(p => `
+          <article class="card">
+            <img src="${p.imageUrl || ''}" alt="${p.name}" />
+            <div class="card-body">
+              <h3>${p.name}</h3>
+              <p class="price">${formatMoney(p.price)}</p>
+              <a href="products.html">View in shop</a>
+            </div>
+          </article>
+        `).join('');
+      } catch (e) {
+        document.getElementById('featured').innerHTML = `<p class="error">${e.message}</p>`;
+      }
+    })();
+  </script>
+</body>
+</html>

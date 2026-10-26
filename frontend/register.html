@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register — Bag Shop</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a class="logo" href="index.html">Bag Shop</a>
+      <nav id="mainNav"></nav>
+    </div>
+  </header>
+  <main>
+    <div class="auth-card">
+      <h1>Create account</h1>
+      <form id="registerForm">
+        <input type="text" id="name" placeholder="Full name" required />
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Password (min 6 chars)" minlength="6" required />
+        <button class="btn" type="submit">Register</button>
+      </form>
+      <p>Already have an account? <a href="login.html">Login</a></p>
+      <p id="error" class="error"></p>
+    </div>
+  </main>
+  <script src="js/script.js"></script>
+  <script>
+    renderNav('');
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const err = document.getElementById('error');
+      err.textContent = '';
+      try {
+        await register(
+          document.getElementById('name').value,
+          document.getElementById('email').value,
+          document.getElementById('password').value
+        );
+        window.location.href = 'products.html';
+      } catch (ex) {
+        err.textContent = ex.message;
+      }
+    });
+  </script>
+</body>
+</html>

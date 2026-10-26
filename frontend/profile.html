@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile — Bag Shop</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a class="logo" href="index.html">Bag Shop</a>
+      <nav id="mainNav"></nav>
+    </div>
+  </header>
+  <main>
+    <div class="auth-card">
+      <h1>Profile</h1>
+      <form id="profileForm">
+        <input type="text" id="name" placeholder="Name" required />
+        <input type="email" id="email" disabled />
+        <input type="text" id="phone" placeholder="Phone" />
+        <textarea id="address" rows="3" placeholder="Default address"></textarea>
+        <button class="btn" type="submit">Save</button>
+      </form>
+      <p id="msg" class="success"></p>
+      <p id="error" class="error"></p>
+    </div>
+  </main>
+  <script src="js/script.js"></script>
+  <script>
+    renderNav('profile');
+    if (!requireAuth()) throw new Error('auth');
+    (async () => {
+      const p = await loadProfile();
+      document.getElementById('name').value = p.name || '';
+      document.getElementById('email').value = p.email || '';
+      document.getElementById('phone').value = p.phone || '';
+      document.getElementById('address').value = p.address || '';
+    })();
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      document.getElementById('error').textContent = '';
+      try {
+        const updated = await updateProfile({
+          name: document.getElementById('name').value,
+          phone: document.getElementById('phone').value,
+          address: document.getElementById('address').value,
+        });
+        setAuth(getToken(), updated);
+        document.getElementById('msg').textContent = 'Profile saved.';
+        renderNav('profile');
+      } catch (ex) {
+        document.getElementById('error').textContent = ex.message;
+      }
+    });
+  </script>
+</body>
+</html>

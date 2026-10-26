@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cart — Bag Shop</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a class="logo" href="index.html">Bag Shop</a>
+      <nav id="mainNav"></nav>
+    </div>
+  </header>
+  <main>
+    <h1>Your cart</h1>
+    <div id="cartContent"></div>
+    <p id="total"></p>
+    <a id="checkoutLink" class="btn" href="checkout.html" style="display:none;">Proceed to checkout</a>
+  </main>
+  <script src="js/script.js"></script>
+  <script>
+    renderNav('cart');
+    if (!requireAuth()) throw new Error('auth');
+
+    async function refresh() {
+      const container = document.getElementById('cartContent');
+      try {
+        const items = await loadCart();
+        if (!items.length) {
+          container.innerHTML = '<p>Your cart is empty. <a href="products.html">Continue shopping</a></p>';
+          document.getElementById('total').textContent = '';
+          document.getElementById('checkoutLink').style.display = 'none';
+          return;
+        }
+        let sum = 0;
+        container.innerHTML = `
+          <table>
+            <thead><tr><th>Product</th><th>Qty</th><th>Total</th><th></th></tr></thead>
+            <tbody>
+              ${items.map(i => {
+                sum += Number(i.lineTotal);
+                return `<tr>
+                  <td>${i.productName}</td>
+                  <td>
+                    <input type="number" min="1" value="${i.quantity}" data-id="${i.id}" class="qty-input" style="width:4rem" />
+                  </td>
+                  <td>${formatMoney(i.lineTotal)}</td>
+                  <td><button type="button" class="btn-link" data-remove="${i.id}">Remove</button></td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>`;
+        document.getElementById('total').innerHTML = `<strong>Cart total: ${formatMoney(sum)}</strong>`;
+        document.getElementById('checkoutLink').style.display = 'inline-block';
+
+        container.querySelectorAll('.qty-input').forEach(input => {
+          input.addEventListener('change', async () => {
+            try {
+              await updateCartItem(Number(input.dataset.id), Number(input.value));
+              await refresh();
+            } catch (ex) {
+              alert(ex.message);
+            }
+          });
+        });
+        container.querySelectorAll('[data-remove]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            await removeCartItem(Number(btn.dataset.remove));
+            await refresh();
+          });
+        });
+      } catch (e) {
+        container.innerHTML = `<p class="error">${e.message}</p>`;
+      }
+    }
+    refresh();
+  </script>
+</body>
+</html>

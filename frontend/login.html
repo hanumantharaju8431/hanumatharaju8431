@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — Bag Shop</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a class="logo" href="index.html">Bag Shop</a>
+      <nav id="mainNav"></nav>
+    </div>
+  </header>
+  <main>
+    <div class="auth-card">
+      <h1>Login</h1>
+      <form id="loginForm">
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <button class="btn" type="submit">Sign in</button>
+      </form>
+      <p>No account? <a href="register.html">Register</a></p>
+      <p id="error" class="error"></p>
+    </div>
+  </main>
+  <script src="js/script.js"></script>
+  <script>
+    renderNav('');
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const err = document.getElementById('error');
+      err.textContent = '';
+      try {
+        await login(document.getElementById('email').value, document.getElementById('password').value);
+        window.location.href = 'products.html';
+      } catch (ex) {
+        err.textContent = ex.message;
+      }
+    });
+  </script>
+</body>
+</html>

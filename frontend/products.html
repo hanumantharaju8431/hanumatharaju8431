@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shop — Bag Shop</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a class="logo" href="index.html">Bag Shop</a>
+      <nav id="mainNav"></nav>
+    </div>
+  </header>
+  <main>
+    <h1>All bags</h1>
+    <p id="msg" class="success"></p>
+    <div id="productGrid" class="grid"></div>
+  </main>
+  <script src="js/script.js"></script>
+  <script>
+    renderNav('products');
+    (async () => {
+      const grid = document.getElementById('productGrid');
+      try {
+        const products = await loadProducts();
+        grid.innerHTML = products.map(p => `
+          <article class="card">
+            <img src="${p.imageUrl || ''}" alt="${p.name}" />
+            <div class="card-body">
+              <h3>${p.name}</h3>
+              <p>${p.description || ''}</p>
+              <p class="price">${formatMoney(p.price)} · ${p.stock} in stock</p>
+              <button class="btn" type="button" data-id="${p.id}">Add to cart</button>
+            </div>
+          </article>
+        `).join('');
+        grid.querySelectorAll('button[data-id]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            if (!getToken()) {
+              window.location.href = 'login.html';
+              return;
+            }
+            try {
+              await addToCart(Number(btn.dataset.id), 1);
+              document.getElementById('msg').textContent = 'Added to cart!';
+            } catch (ex) {
+              alert(ex.message);
+            }
+          });
+        });
+      } catch (e) {
+        grid.innerHTML = `<p class="error">${e.message}</p>`;
+      }
+    })();
+  </script>
+</body>
+</html>

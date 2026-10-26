@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orders — Bag Shop</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a class="logo" href="index.html">Bag Shop</a>
+      <nav id="mainNav"></nav>
+    </div>
+  </header>
+  <main>
+    <h1>Order history</h1>
+    <div id="orders"></div>
+  </main>
+  <script src="js/script.js"></script>
+  <script>
+    renderNav('orders');
+    if (!requireAuth()) throw new Error('auth');
+    (async () => {
+      const el = document.getElementById('orders');
+      try {
+        const orders = await loadOrders();
+        if (!orders.length) {
+          el.innerHTML = '<p>No orders yet.</p>';
+          return;
+        }
+        el.innerHTML = orders.map(o => `
+          <div class="panel wide" style="max-width:100%; margin:1rem 0;">
+            <h3>Order #${o.id} — ${o.status} — ${formatMoney(o.totalAmount)}</h3>
+            <p><small>${new Date(o.createdAt).toLocaleString()}</small></p>
+            <p>${o.shippingAddress || ''}</p>
+            <ul>${(o.lines || []).map(l => `<li>${l.productName} × ${l.quantity} @ ${formatMoney(l.unitPrice)}</li>`).join('')}</ul>
+          </div>
+        `).join('');
+      } catch (e) {
+        el.innerHTML = `<p class="error">${e.message}</p>`;
+      }
+    })();
+  </script>
+</body>
+</html>
