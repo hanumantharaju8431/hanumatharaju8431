@@ -15,41 +15,69 @@
   </header>
   <main>
     <h1>All bags</h1>
+    <p id="productCount"></p>
     <p id="msg" class="success"></p>
     <div id="productGrid" class="grid"></div>
+    <div id="pager" class="actions" style="margin-top:1.5rem;"></div>
   </main>
   <script src="js/script.js"></script>
   <script>
     renderNav('products');
+    const PAGE_SIZE = 24;
+    let allProducts = [];
+    let page = 1;
+
+    function renderPage() {
+      const grid = document.getElementById('productGrid');
+      const totalPages = Math.max(1, Math.ceil(allProducts.length / PAGE_SIZE));
+      page = Math.min(page, totalPages);
+      const start = (page - 1) * PAGE_SIZE;
+      const slice = allProducts.slice(start, start + PAGE_SIZE);
+
+      document.getElementById('productCount').textContent =
+        `${allProducts.length} bags · page ${page} of ${totalPages}`;
+
+      grid.innerHTML = slice.map(p => `
+        <article class="card">
+          <img src="${p.imageUrl || ''}" alt="${p.name}" loading="lazy" />
+          <div class="card-body">
+            <h3>${p.name}</h3>
+            <p>${p.description || ''}</p>
+            <p class="price">${formatMoney(p.price)} · ${p.stock} in stock</p>
+            <button class="btn" type="button" data-id="${p.id}">Add to cart</button>
+          </div>
+        </article>
+      `).join('');
+
+      grid.querySelectorAll('button[data-id]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (!getToken()) {
+            window.location.href = 'login.html';
+            return;
+          }
+          try {
+            await addToCart(Number(btn.dataset.id), 1);
+            document.getElementById('msg').textContent = 'Added to cart!';
+          } catch (ex) {
+            alert(ex.message);
+          }
+        });
+      });
+
+      const pager = document.getElementById('pager');
+      pager.innerHTML = `
+        <button class="btn btn-secondary" type="button" id="prevPage" ${page <= 1 ? 'disabled' : ''}>Previous</button>
+        <button class="btn btn-secondary" type="button" id="nextPage" ${page >= totalPages ? 'disabled' : ''}>Next</button>
+      `;
+      document.getElementById('prevPage')?.addEventListener('click', () => { page--; renderPage(); window.scrollTo(0, 0); });
+      document.getElementById('nextPage')?.addEventListener('click', () => { page++; renderPage(); window.scrollTo(0, 0); });
+    }
+
     (async () => {
       const grid = document.getElementById('productGrid');
       try {
-        const products = await loadProducts();
-        grid.innerHTML = products.map(p => `
-          <article class="card">
-            <img src="${p.imageUrl || ''}" alt="${p.name}" />
-            <div class="card-body">
-              <h3>${p.name}</h3>
-              <p>${p.description || ''}</p>
-              <p class="price">${formatMoney(p.price)} · ${p.stock} in stock</p>
-              <button class="btn" type="button" data-id="${p.id}">Add to cart</button>
-            </div>
-          </article>
-        `).join('');
-        grid.querySelectorAll('button[data-id]').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            if (!getToken()) {
-              window.location.href = 'login.html';
-              return;
-            }
-            try {
-              await addToCart(Number(btn.dataset.id), 1);
-              document.getElementById('msg').textContent = 'Added to cart!';
-            } catch (ex) {
-              alert(ex.message);
-            }
-          });
-        });
+        allProducts = await loadProducts();
+        renderPage();
       } catch (e) {
         grid.innerHTML = `<p class="error">${e.message}</p>`;
       }
